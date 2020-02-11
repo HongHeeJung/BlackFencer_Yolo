@@ -4,12 +4,15 @@ import numpy as np
 import threading
 import time
 import random
+import re # extract number
 import sys, os
 sys.path.append(os.path.join(os.getcwd(), 'python/'))
 sys.path.append(os.getcwd().replace('darknet', ''))
 sys.path.append(os.getcwd().replace('darknet', 'temp_camNum/'))
 sys.path.append(os.getcwd().replace('darknet', 'slice/'))
 
+# image file path
+src = "./camData"
 
 # server socket
 host = "172.20.10.11"
@@ -29,77 +32,99 @@ def main():
     mystreaming.start()
     mysendcoords = SendCoordinates()
     mysendcoords.start()
+    myyolovideo = YoloVideo()
+    myyolovideo.start()
 
 
 # Streaming_return buffer
-def recvall(sock, count):
+def recvall(server_sock, count):
+    global sock
+    sock = server_sock
+    print("ok")
     buf = b''
     while count:
-        newbuf = sock.recv(count)
+        newbuf = server_sock.recv(count)
         if not newbuf: return None
         buf += newbuf
         count -= len(newbuf)
     return buf
-'''
-def fileName():
-    imgFileName = cam + in
-'''
+
+
+# IMG & VIDEO FILE NAME COUNT
+img_filename_cnt = 1
+video_name_cnt = 1
+
+
 class Streaming(threading.Thread):
     def __init__(self):
         global conn
+        global img_filename_cnt
+        global video_name_cnt
         threading.Thread.__init__(self)
+
         # stringData size (==(str(len(stringData))).encode().ljust(16))
         self.length = recvall(conn, 16)
         self.stringData = 1
         self.data = 1
-        fileName_cnt = 0
-        videoName_cnt = 0
         print("Streaming Thread Start")
         
     def run(self):
         global conn
+        global img_filename_cnt
+        global video_name_cnt
         while True:
-            print("############## run ############")
+            print("############## run ###############")
             # lock aquired by client
             # print_lock.acquire()
-            '''
-            # make cam img file
-            recv_path = './temp_camNum'
-            recv_fileList = os.listdir(recv_path)
-            recv_fileList.remove(".DS_Store")
-            if(fileName_cnt > 600):
-                for fileName in recv_fileList:
-                    os.sys("rm " + fileName)
-                fileName_cnt = 0
-            '''
-            # recieve cam img
+
+            # GET CAM IMG
+            # receive cam data
             stringData = recvall(conn, int(self.length))
             print('# get string_data')
-            self.data = np.fromstring(stringData, dtype=np.uint8)
-            print('## get self.data',self.data)
+            self.data = np.frombuffer(stringData, dtype=np.uint8)
+            print('### get self.data')
+
             # decoding data_streaming
-            frame = cv2.imdecode(self.data, cv2.IMREAD_COLOR)
-            print('### decode self.data')
+            frame = cv2.imdecode(self.data, 1)
+            print('##### decode self.data')
+            # print(np.shape(frame))
             print("frame : ", frame)
             print("shape :", frame.shape)
-            '''
-            # store cam img
-            img_fileName = fileName()
-            print(img_fileName)
-            
-            if fileName_cnt
-            
-            # command: make mp4 file
-            os.system("ffmpeg -f image2 -i temp_camNum/cam%4d.jpg data/media/"+videoName+".mp4")
-            # command: run yolo
-            os.system("./darknet detector demo data/obj.data cfg/yolov3.cfg backup/yolov3_3300.weights data/media/"+videoName+".mp4")
-            '''
-            # print(np.shape(frame))
-            # show mp4
-            cv2.imshow("viedo", frame)
+
+            # count the number of frames
+            frame_cnt = 0
+            frame_cnt += 1
+            if(frame_cnt > 600):
+                img_filename_cnt += 1
+
+            # store am frames
+            cv2.imwrite('img'+img_filename_cnt+'/cam'+frame_cnt+'.jpg', frame)
+            print('Store frames at FILE: img' + img_filename_cnt + ' Successfully')
+
+            # streaming
+            cv2.imshow("Streaming", frame)
             if cv2.waitKey(1) is 'q':
                 break
-            
+
+            # JPG TO MP4
+            # get img file
+            img_path = src + '/img' + img_filename_cnt
+            # command: make mp4 file
+            os.system("ffmpeg -f image2 -i " + img_path + "/cam%4d.jpg camData/media/video" + video_name_cnt + ".mp4")
+            video_name_cnt += 1
+            print('Make video' + video_name_cnt + ' Successfully')
+
+
+class YoloVideo(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+
+    def run(self):
+        global video_name_cnt
+        while True:
+            # command: run yolo
+            os.system("./darknet detector demo data/obj.data cfg/yolov3.cfg backup/yolov3_3300.weights camData/media/video" + video_name_cnt + ".mp4")
+            print("Now Detecting Black Ice...")
 
 
 # Send_open/read file
@@ -112,7 +137,7 @@ class SendCoordinates(threading.Thread):
         global conn
         while True:
             time.sleep(0.1)
-            # client2_yolo_mark bounding box
+            # read yolo_mark bounding box
             f = open("/home/heejunghong/BlackfencerWeb/index.html", 'r')
             self.data = f.read()
             conn.send(str(self.data))
