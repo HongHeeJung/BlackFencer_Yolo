@@ -8,7 +8,7 @@ import time
 # import re # extract number
 import sys, os
 # sys.path.append(os.path.join(os.getcwd(), 'python/'))
-sys.path.append(os.getcwd().replace('darknet', ''))
+# sys.path.append(os.getcwd().replace('darknet', ''))
 # sys.path.append(os.getcwd().replace('darknet', 'camData/'))
 # sys.path.append(os.getcwd().replace('darknet', 'img1/'))
 import FrameProcess as fp
@@ -32,17 +32,19 @@ print('Connected to :', addr[0], ':', addr[1])
 def main():
     mystreaming = Streaming()
     mystreaming.start()
-    # mysendcoords = SendCoordinates()
-    # mysendcoords.start()
-    '''
+    time.sleep(5)
+    mysendcoords = SendCoordinates()
+    mysendcoords.start()
     myyolovideo = YoloVideo()
     myyolovideo.start()
-    '''
+    time.sleep(5)
 
+'''
 # Handler
 class MyTCPHandler(socketserver.BaseRequestHandler):
     def handle(self)
         print(self.
+'''
 
 
 # Streaming_return buffer
@@ -51,8 +53,8 @@ def recvall(sock, count):
     buf = b''
     while count:
         newbuf = sock.recv(count)
-        print("newbuf: ",newbuf)
-        print("count: ",count)
+        print("newbuf: ", newbuf)
+        print("count: ", count)
         if not newbuf: return None
         buf += newbuf
         count -= len(newbuf)
@@ -67,19 +69,17 @@ length = recvall(conn, 16)
 stringData = "1"
 data = "1"
 
+
 # _lock = threading.Lock()
-class Streaming(threading.Thread):
+class Streaming:
     def __init__(self):
-        global conn
-        global img_filename_cnt
-        global video_name_cnt
         threading.Thread.__init__(self)
 
         # stringData size (==(str(len(stringData))).encode().ljust(16))
         # length = recvall(conn, 16)
         # self.stringData = 1
         # self.data = 1
-        print("Streaming Thread Start")
+        print("Streaming mainThread Start")
         
     def run(self):
         global conn
@@ -96,7 +96,7 @@ class Streaming(threading.Thread):
             # GET CAM IMG
             # receive cam data
             stringData = recvall(conn, int(length))
-            print('# get string_data    ',stringData)
+            print('# get string_data    ', stringData)
             data = np.fromstring(stringData, dtype=np.uint8)
             print('### get self.data')
             frame = cv2.imdecode(data, cv2.IMREAD_COLOR)
@@ -130,7 +130,8 @@ class Streaming(threading.Thread):
             video_name_cnt += 1
             print('Make video' + video_name_cnt + ' Successfully')
             '''
-'''
+
+
 class YoloVideo(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -141,8 +142,8 @@ class YoloVideo(threading.Thread):
             # command: run yolo
             os.system("./darknet detector demo data/obj.data cfg/yolov3.cfg backup/yolov3_3300.weights camData/media/video" + video_name_cnt + ".mp4")
             print("Now Detecting Black Ice...")
-'''
-'''
+
+
 # Send_open/read file
 class SendCoordinates(threading.Thread):
     def __init__(self):
@@ -158,7 +159,7 @@ class SendCoordinates(threading.Thread):
             self.data = f.read()
             conn.send(str(self.data))
             f.close()
-'''
+
 
 if __name__ == '__main__':
     main()
