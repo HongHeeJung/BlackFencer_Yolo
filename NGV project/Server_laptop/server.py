@@ -53,8 +53,10 @@ class Telecommunication:
                     self.server_socket.sendall("GOT IMAGE")
                     self.imgcnt += 1
             except:
+                '''
                 self.server_socket.close()
-                connected_clients_sockets.remove(sock)
+                self.conn.remove(sock)
+                '''
                 continue
 
         # server_socket.close()
