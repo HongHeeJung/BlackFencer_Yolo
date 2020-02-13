@@ -5,6 +5,7 @@ import time
 import socket
 import sys
 import os
+import detector
 
 imgcnt = 1
 
@@ -20,6 +21,7 @@ print('Server Socket is listening')
 
 img_cnt = 1
 
+
 def recvall(sock, count):
     buf = b''
     while count:
@@ -29,42 +31,44 @@ def recvall(sock, count):
         count -= len(newbuf)
     return buf
 
+
 def runyolo(a):
     with open("/home/heejunghong/BlackfencerWeb/index.html", 'wt') as my_file_2:
         print("html reset")
         my_file_2.write('0')
         my_file_2.close()
     os.system(
-            './darknet detector demo data/obj.data cfg/yolov3.cfg backup/yolov3_3300.weights '
-            'camData/*.jpg')
-        imgcnt += 1
-        time.sleep(2)
+        './darknet detector demo data/obj.data cfg/yolov3.cfg backup/yolov3_3300.weights '
+        'camData/*.jpg')
+    imgcnt += 1
+    time.sleep(2)
+
 
 while True:
     # establish connection with client (conn: client socket, addr: binded address)
     conn, addr = server_socket.accept()
     print('Connected to :', addr[0], ':', addr[1])
     try:
-        length = recvall(conn,16)
+        length = recvall(conn, 16)
         frame_data = recvall(conn, int(length))
-        
+
         if frame_data:
             print("receiving frame...")
             with open('./camData/*.jpg', 'wb') as my_file:
                 my_file.write(frame_data)
-                print("frame Update!")                
+                print("frame Update!")
                 my_file.close()
         else:
             break
-        
+
         # command: run yolo
-        rn = threading.Thread(target = runyolo, args = (1, ))
-        rn.start()
+        AnalysisThread = RunYolo()
+        AnalysisThread.start()
 
         # read yolo_mark bounding box
         with open("/home/heejunghong/BlackfencerWeb/index.html", 'r') as my_file_2:
             data = my_file_2.read()
-            conn.send(str(data))
+            conn.send(data)
             my_file_2.close()
         with open("/home/heejunghong/BlackfencerWeb/index.html", 'wt') as my_file_2:
             my_file_2.write('0')
@@ -76,4 +80,4 @@ while True:
 
 if __name__ == '__main__':
     main()
-    print('end')   
+    print('end')
