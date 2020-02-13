@@ -1,3 +1,9 @@
+'''
+2020.02.13.
+'''
+# coding=<ascii>
+# TRY: 'UTF-8', 'ascii', 'ISO-8859-2', 'UTF-16LE', 'TIS-620', 'utf-8', 'SHIFT_JIS', 'ISO-8859-7'
+# 0A -> in ASCII a newline
 from ctypes import *
 import math
 import random
@@ -50,7 +56,7 @@ class METADATA(Structure):
 
 # lib = CDLL("/home/pjreddie/documents/darknet/libdarknet.so", RTLD_GLOBAL)
 # ADD HJ'S LAPTOP PATH
-lib = CDLL(os.path.join(os.getcwd(), "darknet/libbdarknet.so"), RTLD_GLOBAL)
+lib = CDLL(("/home/heejunghong/opencv/opencv-3.2.0/build/darknet/libdarknet.so"), RTLD_GLOBAL)
 # lib = CDLL("libdarknet.so", RTLD_GLOBAL)
 lib.network_width.argtypes = [c_void_p]
 lib.network_width.restype = c_int
