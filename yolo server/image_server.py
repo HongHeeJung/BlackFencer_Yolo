@@ -2,16 +2,9 @@ from socket import *
 import socket
 import cv2
 import numpy as np
-import threading
 import time
-import FrameProcess as fp
 import sys
 import os
-# sys.path.append(os.path.join(os.getcwd(), 'python/'))
-# sys.path.append(os.getcwd().replace('darknet', ''))
-# sys.path.append(os.getcwd().replace('darknet', 'camData/'))
-# sys.path.append(os.getcwd().replace('darknet', 'img1/'))
-
 
 # image file path
 src = "./camData"

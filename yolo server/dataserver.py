@@ -1,3 +1,7 @@
+'''
+2020.02.12.
+raspberry pi to Yolo server: RECEIVE FRAMES to MAKE A VIDEO
+'''
 from socket import *
 import socket
 import cv2
@@ -62,7 +66,7 @@ class Telecommunication(self):
         img_filename_cnt = 1
         file_receive_cnt = 0
 
-        for _ in range(2):
+        for _ in range(1):
             data = None
             # RECEIVE CAM FRAMES
             while True:

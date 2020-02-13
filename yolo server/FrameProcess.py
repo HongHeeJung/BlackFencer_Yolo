@@ -1,3 +1,7 @@
+'''
+2020.02.11.
+raspberry pi to Yolo server: MAKE A VIDEO
+'''
 import cv2
 import numpy as np
 import os

@@ -1,5 +1,10 @@
+'''
+2020.02.13.
+raspberry pi to Yolo server: RECEIVE JUST ONE FRAME
+'''
+
 from socket import *
-import socket
+import socket, select
 import cv2
 import numpy as np
 import time
@@ -12,60 +17,54 @@ import os
 # sys.path.append(os.getcwd().replace('darknet', 'img1/'))
 
 
-# Streaming_return buffer
-def recvall(sock, count):
-    print("ok")
-    buf = b''
-    while count:
-        newbuf = sock.recv(count)
-        print("newbuf: ", newbuf)
-        print("count: ", count)
-        if not newbuf: return None
-        buf += newbuf
-        count -= len(newbuf)
-    return buf
-
-
 class Telecommunication(self):
     def __init__(self):
         # server socket
         self.host = "192.168.255.21"
         self.port = 5003
-        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_socket.bind((self.host, self.port))
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.bind((self.host, self.port))
         # waiting client
-        server_socket.listen(5)
+        self.server_socket.listen(5)
         print('Server Socket is listening')
         # establish connection with client (conn: client socket, addr: binded address)
-        self.conn, self.addr = server_socket.accept()
+        self.conn.append(self.server_socket)
         print('Connected to :', addr[0], ':', addr[1])
+        self.imgcnt = 1
+        self.basename = "cam"
 
     def recvframe(self):
 
-        for _ in range(1):
-            data = None
-            # RECEIVE CAM FRAME
-            while True:
-                print("############## receive cam frame ###############")
-                '''
-                # delete the used frames
-                rev_path = './camData/'
-                rev_frame_list = os.listdir(rev_path)
-                if ".USED" in rev_frame_list:
-                    rev_frame_list.remove(".USED")
-                '''
-                frame_data = self.conn.recv(1000000)
-                data = frame_data
+        # RECEIVE CAM FRAME
+        while True:
+            read_sockets, write_sockets, error_sockets = select.select(self.conn, [], [])
 
-                if frame_data:
-                    while frame_data:
-                        print("receiving frames...")
-                        frame_data = conn.recv(1000000)
-                        data += frame_data
-                        print(len(data))
-                        time.sleep(1)
-                    else:
-                        break
+            for sock in read_sockets:
+                if sock == self.server_socket:
+                    sockfd, client_address = self.server_socket.accept()
+                    conn.append(sockfd)
+                else:
+                    try:
+                        frame_data = sock.recv(4096)
+                        print("receiving frame...")
+                        if frame_data:
+                            myfile = open('./camData/image%s.jpg' % self.imgcnt, 'wb')
+                            myfile.write(frame_data)
+                            frame_data = sock.recv(40960000)
+
+                            if not frame_data:
+                                myfile.close()
+                                break
+                            myfile.write(frame_data)
+                            myfile.close()
+                            sock.sendall("GOT IMAGE")
+
+                    except:
+                        sock.close()
+                        connected_clients_sockets.remove(sock)
+                        continue
+                self.imgcnt += 1
+                # server_socket.close()
 
     # Send_open/read file
     def sendcoordinates(self):
@@ -77,5 +76,4 @@ class Telecommunication(self):
             f.close()
 
     def shutdown(self):
-
         self.conn.close()

@@ -6,6 +6,7 @@ import FrameProcess
 import dataserver
 import sys
 import os
+from os.path import isfile, join
 sys.path.append(os.path.join(os.getcwd(), 'python/'))
 sys.path.append(os.getcwd().replace('darknet', ''))
 # sys.path.append(os.getcwd().replace('darknet', 'camData/'))
@@ -30,12 +31,8 @@ class MainThread:
 
 MainThread()
 
-import cv2
-import numpy as np
-import os
-from os.path import isfile, join
 
-video_name_cnt = 0
+
 
 
 def frame2video():
