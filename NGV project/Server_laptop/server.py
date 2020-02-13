@@ -17,7 +17,7 @@ import os
 # sys.path.append(os.getcwd().replace('darknet', 'img1/'))
 
 
-class Telecommunication(self):
+class Telecommunication:
     def __init__(self):
         # server socket
         self.host = "192.168.255.21"
