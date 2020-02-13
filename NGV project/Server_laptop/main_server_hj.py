@@ -12,7 +12,7 @@ imgcnt = 1
 
 
 def main():
-    ts = Telecommunication()
+    ts = server.Telecommunication()
     while True:
         ts.recvframe()
         runYolo()
