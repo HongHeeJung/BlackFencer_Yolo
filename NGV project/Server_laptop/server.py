@@ -28,7 +28,7 @@ class Telecommunication:
         self.server_socket.listen(5)
         print('Server Socket is listening')
         # establish connection with client (conn: client socket, addr: binded address)
-        self.conn.append(self.server_socket)
+        self.conn, addr = self.server_socket.accept()
         print('Connected to :', addr[0], ':', addr[1])
         self.imgcnt = 1
         self.basename = "cam"
@@ -37,34 +37,27 @@ class Telecommunication:
 
         # RECEIVE CAM FRAME
         while True:
-            read_sockets, write_sockets, error_sockets = select.select(self.conn, [], [])
+            try:
+                frame_data = self.server_socket.recv(4096)
+                print("receiving frame...")
+                if frame_data:
+                    myfile = open('./camData/image%s.jpg' % self.imgcnt, 'wb')
+                    myfile.write(frame_data)
+                    frame_data = self.server_socket.recv(40960000)
 
-            for sock in read_sockets:
-                if sock == self.server_socket:
-                    sockfd, client_address = self.server_socket.accept()
-                    conn.append(sockfd)
-                else:
-                    try:
-                        frame_data = sock.recv(4096)
-                        print("receiving frame...")
-                        if frame_data:
-                            myfile = open('./camData/image%s.jpg' % self.imgcnt, 'wb')
-                            myfile.write(frame_data)
-                            frame_data = sock.recv(40960000)
+                    if not frame_data:
+                        myfile.close()
+                        break
+                    myfile.write(frame_data)
+                    myfile.close()
+                    self.server_socket.sendall("GOT IMAGE")
+                    self.imgcnt += 1
+            except:
+                self.server_socket.close()
+                connected_clients_sockets.remove(sock)
+                continue
 
-                            if not frame_data:
-                                myfile.close()
-                                break
-                            myfile.write(frame_data)
-                            myfile.close()
-                            sock.sendall("GOT IMAGE")
-
-                    except:
-                        sock.close()
-                        connected_clients_sockets.remove(sock)
-                        continue
-                self.imgcnt += 1
-                # server_socket.close()
+        # server_socket.close()
 
     # Send_open/read file
     def sendcoordinates(self):
