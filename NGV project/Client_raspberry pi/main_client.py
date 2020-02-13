@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import threading
 import socket
+from socket import *
 import time
 from queue import Queue
 import ImagePreProcess as ipp
@@ -33,6 +34,7 @@ image_queue = Queue()
 
 ###########################
 
+
 def main():
     """
     BlackFencer System의 main
@@ -55,10 +57,10 @@ def main():
     
     mySaveImage = SaveImage(IMAGE, HET)
     
-    tel = Telecommunication()
+
     
-    #myServerSendImage = ServerSendImage()
-    #myServerSendImage.start()
+    # myServerSendImage = ServerSendImage()
+    # myServerSendImage.start()
 
     _, _frame = cam.read()
     mySaveImage.start()
@@ -75,7 +77,7 @@ def main():
         image_queue.put(stringData)
         tel.sendframe()
 
-        #cv2.imshow("framegfg", frame)
+        # cv2.imshow("framegfg", frame)
         key = cv2.waitKey(1)
         if key == 27:
             break
@@ -197,9 +199,9 @@ class ServerSendImage(threading.Thread):
 
             pass
 
-
     def shutdown(self):
         pass
+
 
 class SaveImage(threading.Thread):
     def __init__(self, option_image, option_het):
@@ -266,6 +268,7 @@ class SaveImage(threading.Thread):
 
     def shutdown(self):
         pass
+
 
 if __name__ == '__main__':
     print("### main start ###")
