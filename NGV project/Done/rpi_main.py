@@ -221,16 +221,6 @@ class SaveImage(threading.Thread):
         pass
 
 
-def recvall(sock, count):
-    buf = b''
-    while count:
-        newbuf = sock.recv(count)
-        if not newbuf: return None
-        buf += newbuf
-        count -= len(newbuf)
-    return buf
-
-
 class DetectFrame(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -257,8 +247,7 @@ class DetectFrame(threading.Thread):
 
             # RECEIVE COORDINATES FROM YOLO
             with open("./COORD_data/coordinates.txt", 'w') as my_file:
-                length = recvall(conn, 16)
-                coord_data = recvall(conn, int(length))
+                coord_data = self.server_socket.recv(1024)
                 print("receiving coordinates...")
                 my_file.write(coord_data)
                 print("coordinates Update!")
