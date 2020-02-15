@@ -74,14 +74,12 @@ class DetectFrame(multiprocessing.Process):
                     my_file_2.close()
 
             except Exception as ex:
-                print('ERROR', ex)
+                print('main.py ERROR', ex)
                 break
 
             # conn.close()
             # self.server_socket.close()
             # print("++++++++++++++++++++++++++++ DISCONNECTED +++++++++++++++++++++++")
-
-            break
 
     def shutdown(self):
         print("Shutdown initiated")
@@ -91,7 +89,7 @@ class DetectFrame(multiprocessing.Process):
 if __name__ == '__main__':
     myDetectFrame = DetectFrame()
     myDetectFrame.start()
-    print("")
+    print("processing start 1")
     myDetectFrame.shutdown()
     time.sleep(1)
     while True:

@@ -41,7 +41,6 @@ class RunYolo(threading.Thread):
                 print("Analysis Initializing...")
                 sys.path.append(os.path.join(os.getcwd(), 'python/'))
                 print("PATH 1")
-
                 import darknet as dn
                 import pdb           
                 print("Import successfully...")
@@ -57,7 +56,6 @@ class RunYolo(threading.Thread):
 
                 if ".USED" in file_list:
                     file_list.remove(".USED")
-
                 total_file_num = len(file_list)
                 current_file_num = int()
                 '''
@@ -74,14 +72,11 @@ class RunYolo(threading.Thread):
                     print("Analysing... " + str(current_file_num) + '/' + str(total_file_num))
                     filepath = path + file_name
                     r = dn.detect(net, meta, filepath.encode('utf-8'))
-
                     current_file_num = current_file_num + 1
                     print(str(current_file_num) + '///' + str(total_file_num))
-
                     if r:
                         print(r)
                         print(file_name)
-
                         f.write(file_name)
                         f.write('\n')
                 '''
@@ -128,19 +123,15 @@ class RunYolo(threading.Thread):
 # Instead just add darknet.py to somewhere in your python path
 # OK actually that might not be a great idea, idk, work in progress
 # Use at your own risk. or don't, i don't care
-
 import sys, os
 sys.path.append(os.path.join(os.getcwd(),'python/'))
-
 import darknet as dn
 import pdb
-
 dn.set_gpu(0)
 net = dn.load_net("cfg/yolo-thor.cfg", "/home/pjreddie/backup/yolo-thor_final.weights", 0)
 meta = dn.load_meta("cfg/thor.data")
 r = dn.detect(net, meta, "data/bedroom.jpg")
 print r
-
 # And then down here you could detect a lot more images like:
 r = dn.detect(net, meta, "data/eagle.jpg")
 print r
