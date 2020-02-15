@@ -4,22 +4,13 @@
 # coding=<ascii>
 import cv2
 import numpy as np
-import threading
+# import threading
 import time
 import socket
 import sys
 import os
 import detector
-
-host = "192.168.0.122"
-port = 5000
-
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-server_socket.bind((host, port))
-# waiting client
-server_socket.listen(5)
-print('Server Socket is listening')
+import multiprocessing
 
 
 def recvall(sock, count):
@@ -32,12 +23,26 @@ def recvall(sock, count):
     return buf
 
 
-def main():
-    while True:
-        # establish connection with client (conn: client socket, addr: binded address)
-        conn, addr = server_socket.accept()
-        print('Connected to :', addr[0], ':', addr[1])
-        for i in range(1, 10):    
+class DetectFrame(multiprocessing.Process):
+    def __init__(self):
+        multiprocessing.Process.__init__(self)
+        self.exit = multiprocessing.Event()
+        self.host = "192.168.255.21"
+        self.port = 4000
+
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_socket.bind((self.host, self.port))
+        # waiting client
+        self.server_socket.listen(5)
+        print('Server Socket is listening')
+
+    def run(self):
+        while not self.exit.is_set():
+            # establish connection with client (conn: client socket, addr: binded address)
+            conn, addr = self.server_socket.accept()
+            print("++++++++++++++++++++++++++++++ CONNECTED +++++++++++++++++++++++++")
+            print('Connected to :', addr[0], ':', addr[1])
             try:
                 with open('./camData/image.jpg', 'wb') as my_file:
                     length = recvall(conn, 16)
@@ -48,38 +53,48 @@ def main():
                     my_file.close()
 
                 # command: run yolo
-                myRunYolo = detector.RunYolo()                
-                if (myRunYolo.is_alive() == False): 
-                    myRunYolo.start()                   
+                myRunYolo = detector.RunYolo()
+                if not myRunYolo.is_alive():
+                    print("[Thread]: Run Yolo")
+                    myRunYolo.start()
+                    del myRunYolo
                 else:
                     del myRunYolo
                     time.sleep(1)
 
-                print("waiting....")
-                time.sleep(4)
                 # read yolo_mark bounding box
-                with open("/home/heejunghong/BlackfencerWeb/index.html", 'r') as my_file_2:
+                with open("/home/heejunghong/BlackfencerWeb/index.html", 'w+t') as my_file_2:
                     data = my_file_2.read()
-                    print("Read the bounding box's coordinate: ", data)
+                    print("Read the bounding box's coordinate")
                     conn.send(data)
-                    my_file_2.close()
                     print("Send bounding box's coordinate successfully!")
-                    time.sleep(3)
-
-                with open("/home/heejunghong/BlackfencerWeb/index.html", 'wt') as my_file_2:
+                    time.sleep(2)
                     my_file_2.write('0')
-                    my_file_2.close()
                     print("Initialize the bounding box's coordinate to 0")
-                
-                continue
-            
-            
+                    my_file_2.close()
+
             except Exception as ex:
                 print('main.py ERROR', ex)
                 break
-        break
+
+            # conn.close()
+            # self.server_socket.close()
+            # print("++++++++++++++++++++++++++++ DISCONNECTED +++++++++++++++++++++++")
+
+    def shutdown(self):
+        print("Shutdown initiated")
+        self.exit.set()
 
 
 if __name__ == '__main__':
-    main()
-    print('end')
+    myDetectFrame = DetectFrame()
+    myDetectFrame.start()
+    print("processing start 1")
+    myDetectFrame.shutdown()
+    time.sleep(1)
+    while True:
+        if not myDetectFrame.is_alive():
+            myDetectFrame.start()
+            myDetectFrame.shutdown()
+        else:
+            break
