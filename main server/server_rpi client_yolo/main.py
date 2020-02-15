@@ -5,13 +5,13 @@
 # coding=<ascii>
 import cv2
 import numpy as np
-# import threading
+import threading
 import time
 import socket
 import sys
 import os
 import detector
-import multiprocessing
+# import multiprocessing
 
 
 def recvall(sock, count):
@@ -24,30 +24,23 @@ def recvall(sock, count):
     return buf
 
 
-class DetectFrame(multiprocessing.Process):
+class DetectFrame(threading.Thread):
     def __init__(self):
-        multiprocessing.Process.__init__(self)
-        self.exit = multiprocessing.Event()
-        self.host = "192.168.255.21"
+        threading.Thread.__init__(self)
+        # Input server IP
+        self.host = "192.168.0.122"
         self.port = 4000
-
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.server_socket.bind((self.host, self.port))
-        # waiting client
-        self.server_socket.listen(5)
-        print('Server Socket is listening')
+        self.server_socket.connect((self.host, self.port))
+        print("connected")
 
     def run(self):
         while not self.exit.is_set():
-            # establish connection with client (conn: client socket, addr: binded address)
-            conn, addr = self.server_socket.accept()
-            print("++++++++++++++++++++++++++++++ CONNECTED +++++++++++++++++++++++++")
-            print('Connected to :', addr[0], ':', addr[1])
+
             try:
                 with open('./camData/image.jpg', 'wb') as my_file:
-                    length = recvall(conn, 16)
-                    frame_data = recvall(conn, int(length))
+                    length = recvall(self.server_socket, 16)
+                    frame_data = recvall(self.server_socket, int(length))
                     print("receiving frame...")
                     my_file.write(frame_data)
                     print("Now frame Updated!")
@@ -55,6 +48,7 @@ class DetectFrame(multiprocessing.Process):
 
                 # command: run yolo
                 myRunYolo = detector.RunYolo()
+                myRunYolo.start()
                 if not myRunYolo.is_alive():
                     print("[Thread]: Run Yolo")
                     myRunYolo.start()

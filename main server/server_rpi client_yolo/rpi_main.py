@@ -211,30 +211,39 @@ class SaveImage(threading.Thread):
 class DetectFrame(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
-        # Input server IP
-        self.host = "192.168.0.122"
+        self.exit = multiprocessing.Event()
+        self.host = "192.168.255.21"
         self.port = 4000
+
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.connect((self.host, self.port))
-        print("connected")
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_socket.bind((self.host, self.port))
+        # waiting client
+        self.server_socket.listen(5)
+        print('Server Socket is listening')
 
     def run(self):
         global location_yolo
         while True:
+            # establish connection with client (conn: client socket, addr: binded address)
+            conn, addr = self.server_socket.accept()
+            print("++++++++++++++++++++++++++++++ CONNECTED +++++++++++++++++++++++++")
+            print('Connected to :', addr[0], ':', addr[1])
+
             # SEND FRAME TO YOLO
             f = open("./cam_data/image.jpg", 'rb')
             frame_data = f.read()
             print("Read file: cam_data...")
             if frame_data:
-                self.server_socket.send(str(len(frame_data)).ljust(16).encode())
-                self.server_socket.send(frame_data)
+                conn.send(str(len(frame_data)).ljust(16).encode())
+                conn.send(frame_data)
                 print('Send camera image successfully!')
 
             else:
                 print('No Image')
 
             # RECEIVE COORDINATES FROM YOLO
-            coord_data = self.server_socket.recv(1024)
+            coord_data = conn.recv(1024)
             location_yolo = coord_data
             print("coordinates Update!", coord_data)
             '''
