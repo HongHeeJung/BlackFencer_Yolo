@@ -1,0 +1,85 @@
+'''
+2020.02.13.
+'''
+# coding=<ascii>
+import cv2
+import numpy as np
+import threading
+import time
+import socket
+import sys
+import os
+import detector
+
+host = "192.168.0.122"
+port = 5000
+
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server_socket.bind((host, port))
+# waiting client
+server_socket.listen(5)
+print('Server Socket is listening')
+
+
+def recvall(sock, count):
+    buf = b''
+    while count:
+        newbuf = sock.recv(count)
+        if not newbuf: return None
+        buf += newbuf
+        count -= len(newbuf)
+    return buf
+
+
+def main():
+    while True:
+        # establish connection with client (conn: client socket, addr: binded address)
+        conn, addr = server_socket.accept()
+        print('Connected to :', addr[0], ':', addr[1])
+        for i in range(1, 10):    
+            try:
+                with open('./camData/image.jpg', 'wb') as my_file:
+                    length = recvall(conn, 16)
+                    frame_data = recvall(conn, int(length))
+                    print("receiving frame...")
+                    my_file.write(frame_data)
+                    print("Now frame Updated!")
+                    my_file.close()
+
+                # command: run yolo
+                myRunYolo = detector.RunYolo()                
+                if (myRunYolo.is_alive() == False): 
+                    myRunYolo.start()                   
+                else:
+                    del myRunYolo
+                    time.sleep(1)
+
+                print("waiting....")
+                time.sleep(4)
+                # read yolo_mark bounding box
+                with open("/home/heejunghong/BlackfencerWeb/index.html", 'r') as my_file_2:
+                    data = my_file_2.read()
+                    print("Read the bounding box's coordinate: ", data)
+                    conn.send(data)
+                    my_file_2.close()
+                    print("Send bounding box's coordinate successfully!")
+                    time.sleep(3)
+
+                with open("/home/heejunghong/BlackfencerWeb/index.html", 'wt') as my_file_2:
+                    my_file_2.write('0')
+                    my_file_2.close()
+                    print("Initialize the bounding box's coordinate to 0")
+                
+                continue
+            
+            
+            except Exception as ex:
+                print('main.py ERROR', ex)
+                break
+        break
+
+
+if __name__ == '__main__':
+    main()
+    print('end')
