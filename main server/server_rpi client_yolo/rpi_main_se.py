@@ -12,7 +12,6 @@ import ImagePreProcess as ipp
 from serial import Serial
 import seeed_python_ircamera as ir
 
-
 ######## 전역변수 #########
 frame = np.zeros(shape=(480, 640, 3), dtype="uint8")
 frame_edge = np.zeros(shape=(480, 640, 3), dtype="uint8")
