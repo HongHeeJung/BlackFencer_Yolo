@@ -7,32 +7,34 @@ from multiprocessing import Process
 import socket
 import os, sys, time
 import shutil
+
 '''
 hj
 '''
 
+
 class RunYolo(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
-        print("[Threade] DARKNET")                       
+        print("[Threade] DARKNET")
         sys.path.append(os.path.join(os.getcwd(), 'python/'))
         import darknet as dn
-        import pdb           
+        import pdb
         print("Import successfully...")
-                
+
         dn.set_gpu(0)
         self.net = dn.load_net("cfg/yolov3.cfg".encode('utf-8'),
-                                  "backup/yolov3_3300.weights".encode('utf-8'), 0)
+                               "backup/yolov3_3300.weights".encode('utf-8'), 0)
         self.meta = dn.load_meta("cfg/coco.data".encode('utf-8'))
         print("========================== WAITING... ============================")
-        
+
     def run(self):
         sys.path.append(os.path.join(os.getcwd(), 'python/'))
         import darknet as dn
         import pdb
         while True:
             try:
-                print("========================= DARKNET START ===========================")                
+                print("========================= DARKNET START ===========================")
                 print("Analysis Initializing...")
                 '''
                 self.workingFlag = 1
@@ -43,7 +45,7 @@ class RunYolo(threading.Thread):
                 import darknet as dn
                 import pdb           
                 print("Import successfully...")
-                
+
                 dn.set_gpu(0)
                 net = dn.load_net("cfg/yolov3.cfg".encode('utf-8'),
                                   "backup/yolov3_3300.weights".encode('utf-8'), 0)
@@ -52,7 +54,7 @@ class RunYolo(threading.Thread):
                 '''                
                 path = 'camData/'
                 file_list = os.listdir(path)
-                
+
                 if ".USED" in file_list:
                     file_list.remove(".USED")
 
@@ -84,19 +86,18 @@ class RunYolo(threading.Thread):
                         f.write('\n')
                 '''
                 f.close()
-                
+
                 # self.printLog.emit("Analysing... " + str(current_file_num) + '/' + str(total_file_num))
-                print("Analysing Finished!")               
+                print("Analysing Finished!")
                 time.sleep(3)
-                
+
                 break
-                
+
             # except OSError:
             except Exception as ex:
                 print('detector.py ERROR', ex)
                 break
-            
-            
+
             print("Darknet Faild to start!")
             print("Darknet Reinitializing...")
 
@@ -115,15 +116,10 @@ class RunYolo(threading.Thread):
             print("Darknet Reinitializing Finished")
             print("Please try again Analysis")
             self.workingFlag = 0
-            
+
     def __del__(self):
         self.myRunYolo.close()
         print("========================= DARKNET END =============================")
-            
-            
-            
-            
-
 
 
 '''
