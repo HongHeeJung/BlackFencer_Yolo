@@ -12,6 +12,8 @@ import shutil
 hj
 '''
 
+kill_thread = False
+
 
 class RunYolo(threading.Thread):
     def __init__(self):
@@ -29,93 +31,98 @@ class RunYolo(threading.Thread):
         print("========================== WAITING... ============================")
 
     def run(self):
+        global kill_thread
         sys.path.append(os.path.join(os.getcwd(), 'python/'))
         import darknet as dn
         import pdb
-        while True:
-            try:
-                print("========================= DARKNET START ===========================")
-                print("Analysis Initializing...")
-                '''
-                self.workingFlag = 1
-                print("Analysis Initializing...")
-                sys.path.append(os.path.join(os.getcwd(), 'python/'))
-                print("PATH 1")
+        if kill_thread is not True:
+            while True:
+                try:
+                    print("========================= DARKNET START ===========================")
+                    print("Analysis Initializing...")
+                    '''
+                    self.workingFlag = 1
+                    print("Analysis Initializing...")
+                    sys.path.append(os.path.join(os.getcwd(), 'python/'))
+                    print("PATH 1")
+    
+                    import darknet as dn
+                    import pdb           
+                    print("Import successfully...")
+    
+                    dn.set_gpu(0)
+                    net = dn.load_net("cfg/yolov3.cfg".encode('utf-8'),
+                                      "backup/yolov3_3300.weights".encode('utf-8'), 0)
+                    meta = dn.load_meta("cfg/coco.data".encode('utf-8'))
+                    '''
+                    '''                
+                    path = 'camData/'
+                    file_list = os.listdir(path)
+    
+                    if ".USED" in file_list:
+                        file_list.remove(".USED")
+    
+                    total_file_num = len(file_list)
+                    current_file_num = int()
+                    '''
+                    if os.path.isfile('detection_result.txt'):
+                        os.remove('detection_result.txt')
+                    f = open('detection_result.txt', 'a')
 
-                import darknet as dn
-                import pdb           
-                print("Import successfully...")
+                    print("Start Analysis...")
+                    frame_path = 'camData/image.jpg'
+                    r = dn.detect(self.net, self.meta, frame_path.encode('utf-8'))
+                    print("RESULT!!!!!!!!!!!!!!!!!!!!!!!!!!!!", r)
+                    '''
+                    for file_name in file_list:
+                        print("Analysing... " + str(current_file_num) + '/' + str(total_file_num))
+                        filepath = path + file_name
+                        r = dn.detect(net, meta, filepath.encode('utf-8'))
+    
+                        current_file_num = current_file_num + 1
+                        print(str(current_file_num) + '///' + str(total_file_num))
+    
+                        if r:
+                            print(r)
+                            print(file_name)
+    
+                            f.write(file_name)
+                            f.write('\n')
+                    '''
+                    f.close()
 
-                dn.set_gpu(0)
-                net = dn.load_net("cfg/yolov3.cfg".encode('utf-8'),
-                                  "backup/yolov3_3300.weights".encode('utf-8'), 0)
-                meta = dn.load_meta("cfg/coco.data".encode('utf-8'))
-                '''
-                '''                
-                path = 'camData/'
-                file_list = os.listdir(path)
+                    # self.printLog.emit("Analysing... " + str(current_file_num) + '/' + str(total_file_num))
+                    print("Analysing Finished!")
+                    time.sleep(3)
 
-                if ".USED" in file_list:
-                    file_list.remove(".USED")
+                    break
 
-                total_file_num = len(file_list)
-                current_file_num = int()
-                '''
-                if os.path.isfile('detection_result.txt'):
-                    os.remove('detection_result.txt')
-                f = open('detection_result.txt', 'a')
+                # except OSError:
+                except Exception as ex:
+                    print('detector.py ERROR', ex)
+                    break
 
-                print("Start Analysis...")
-                frame_path = 'camData/image.jpg'
-                r = dn.detect(self.net, self.meta, frame_path.encode('utf-8'))
-                print("RESULT!!!!!!!!!!!!!!!!!!!!!!!!!!!!", r)
-                '''
-                for file_name in file_list:
-                    print("Analysing... " + str(current_file_num) + '/' + str(total_file_num))
-                    filepath = path + file_name
-                    r = dn.detect(net, meta, filepath.encode('utf-8'))
+                print("Darknet Faild to start!")
+                print("Darknet Reinitializing...")
 
-                    current_file_num = current_file_num + 1
-                    print(str(current_file_num) + '///' + str(total_file_num))
+                if os.path.isfile("darknet/libdarknet.so"):
+                    os.remove("darknet/libdarknet.so")
+                if os.path.isfile("darknet/libdarknet.a"):
+                    os.remove("darknet/libdarknet.a")
+                if os.path.isfile("darknet/darknet"):
+                    os.remove("darknet/darknet")
+                if os.path.isdir("darknet/obj/"):
+                    shutil.rmtree("darknet/obj/")
 
-                    if r:
-                        print(r)
-                        print(file_name)
+                makepath = os.getcwd() + "/darknet"
+                os.system("make -C " + makepath)
 
-                        f.write(file_name)
-                        f.write('\n')
-                '''
-                f.close()
+                print("Darknet Reinitializing Finished")
+                print("Please try again Analysis")
+                self.workingFlag = 0
 
-                # self.printLog.emit("Analysing... " + str(current_file_num) + '/' + str(total_file_num))
-                print("Analysing Finished!")
-                time.sleep(3)
-
-                break
-
-            # except OSError:
-            except Exception as ex:
-                print('detector.py ERROR', ex)
-                break
-
-            print("Darknet Faild to start!")
-            print("Darknet Reinitializing...")
-
-            if os.path.isfile("darknet/libdarknet.so"):
-                os.remove("darknet/libdarknet.so")
-            if os.path.isfile("darknet/libdarknet.a"):
-                os.remove("darknet/libdarknet.a")
-            if os.path.isfile("darknet/darknet"):
-                os.remove("darknet/darknet")
-            if os.path.isdir("darknet/obj/"):
-                shutil.rmtree("darknet/obj/")
-
-            makepath = os.getcwd() + "/darknet"
-            os.system("make -C " + makepath)
-
-            print("Darknet Reinitializing Finished")
-            print("Please try again Analysis")
-            self.workingFlag = 0
+        else:
+            thread.exit()
 
     def __del__(self):
         self.myRunYolo.close()
