@@ -144,11 +144,11 @@ class SaveImage(threading.Thread):
         # Het image
         if not (os.path.isdir("./het_data")):
             os.makedirs(os.path.join("het_data"))
-        '''
+
         # Coordinate
         if not (os.path.isdir("./coord_data")):
             os.makedirs(os.path.join("coord_data"))
-        '''
+
         time.sleep(2)
 
         # Camera Image
@@ -237,19 +237,25 @@ class DetectFrame(threading.Thread):
 class RecvCoord(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
+        # Input server IP
+        self.host = "192.168.0.122"
+        self.port = 4000
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.connect((self.host, self.port))
+        print("connected")
 
-    def run(self):
+    def sock(self):
+        global location_yolo
         # RECEIVE COORDINATES FROM YOLO
         coord_data = self.server_socket.recv(1024)
         location_yolo = coord_data
         print("coordinates Update!", coord_data)
-        '''
+
         with open("./coord_data/coordinates.txt", 'w') as my_file:
             print("receiving coordinates...")
             my_file.write(str(coord_data))
             print("coord : ", str(coord_data))
             my_file.close()
-        '''
 
 
 # IMAGE FOR DISPLAY
