@@ -119,8 +119,8 @@ print('Server Socket is listening')
 create_thread(server_socket)
 
 # establish connection with client (conn: client socket, addr: binded address)
-        self.conn, addr = self.server_socket.accept()
-        print('Connected to :', addr[0], ':', addr[1])
+conn, addr = self.server_socket.accept()
+print('Connected to :', addr[0], ':', addr[1])
 # server_socket.close()
 
 if __name__ == '__main__':
