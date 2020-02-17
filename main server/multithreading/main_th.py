@@ -75,6 +75,9 @@ def runyolo():
 
 
 if __name__ == '__main__':
-    telecommunication()
-    thread.start_new_thread(runyolo, ())
-    print('end')
+    while True:
+        telecommunication()
+        thread.start_new_thread(runyolo, ())
+        time.sleep(2)
+
+        print('end')

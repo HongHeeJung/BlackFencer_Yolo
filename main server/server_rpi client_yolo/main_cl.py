@@ -35,8 +35,7 @@ class DetectFrame(threading.Thread):
         print("connected")
 
     def run(self):
-        while not self.exit.is_set():
-
+        while True:
             try:
                 with open('./camData/image.jpg', 'wb') as my_file:
                     length = recvall(self.server_socket, 16)
