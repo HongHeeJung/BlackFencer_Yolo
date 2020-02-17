@@ -80,23 +80,18 @@ class Cserver(threading.Thread):
     def __init__(self, socket):
         super().__init__()
         self.server_socket = socket
-
     def run(self):
         # global runyolo_ctrl
         global index
         
-
         index = index+1
         create_thread(self.server_socket)
         t=threading.Thread(target=self.conn)
         t.deamon=True
         t.start()
-
     def shutdown(self):
         print("Shutdown initiated")
         self.exit.set()
-
-
 def create_thread(server_socket):
     global index
     t.append(Cserver(server_socket))
@@ -107,7 +102,7 @@ def create_thread(server_socket):
 # t = []
 index = 0
 
-host = "192.168.255.21"
+host = "172.20.10.11"
 port = 4000
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -116,14 +111,13 @@ server_socket.bind((host, port))
 # waiting client
 server_socket.listen(5)
 print('Server Socket is listening')
-create_thread(server_socket)
+# create_thread(server_socket)
 
 # establish connection with client (conn: client socket, addr: binded address)
-conn, addr = self.server_socket.accept()
+conn, addr = server_socket.accept()
 print('Connected to :', addr[0], ':', addr[1])
 # server_socket.close()
 
 if __name__ == '__main__':
     main()
     print('end')
-
