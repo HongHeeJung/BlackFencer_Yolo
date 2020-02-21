@@ -249,7 +249,7 @@ void draw_detections(image im, detection *dets, int num, float thresh, char **na
 		if(bBox == 0) {			
 			if((hf = fopen("/home/heejunghong/BlackfencerWeb/index.html", "w"))) {
 				printf("file reset\n");
-				fprintf(hf, "%d,%d,%d,%d\n", 1,2,3,4);
+				fprintf(hf, "%d\n", 0);
 				fclose(hf);
 			}
 				else
@@ -323,10 +323,16 @@ void draw_detections(image im, detection *dets, int num, float thresh, char **na
 				//html로 좌표값을 보내는 코드
 				bBox = 1;
 			    printf("send coordinate \n");
-			
+                
+                //x: 640 y:480
+                int cent_x = (right-left)/2;
+                int cent_y = 480 - (bot - top)/2;
+                int b_width = right - left;
+                int b_height = 480 - (bot - top);
+			    
 			    if((hf = fopen("/home/heejunghong/BlackfencerWeb/index.html", "w"))) {
 				    printf("html file open success\n");
-				    fprintf(hf, "%f,%f,%f,%f\n",b.x,b.y,b.w,b.h);
+				    fprintf(hf, "%d,%d,%d,%d\n",cent_x,cent_y,b_width,b_height);
 				    fclose(hf);
 			    }
 			    else
