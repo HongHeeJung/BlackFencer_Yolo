@@ -23,11 +23,6 @@ print("Connected")
 
 
 def main():
-    # receive ip camera
-    cap = cv2.VideoCapture('http://192.168.0.116:8081/video?dummy=param.mjpg')
-    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
-    time.sleep(2)
-    
     # socket
     sc = threading.Thread(target=send_coord, args=(client_socket,))
     sc.start()
@@ -38,13 +33,7 @@ def send_coord(sock):
     while True:
         print("waiting....")
         time.sleep(4)
-        # read yolo_mark bounding box
-        '''
-        with open("/home/heejunghong/BlackfencerWeb/index.html", 'w') as my_file_2:     
-            my_file_2.write('0')
-            print("Initialize the bounding box's coordinate to 0")
-            my_file_2.close()
-        '''    
+        # read yolo_mark bounding box   
         with open("/home/heejunghong/BlackfencerWeb/index.html", 'r') as my_file_2:
             data = my_file_2.read()
             print("Read the bounding box's coordinate")
